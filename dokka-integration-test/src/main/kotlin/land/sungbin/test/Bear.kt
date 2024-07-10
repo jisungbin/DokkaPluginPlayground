@@ -9,4 +9,4 @@ import androidx.compose.runtime.Composable
  *
  * @snapshotsize 300,300
  */
-@Composable fun Beer() = Unit
+@Composable fun Bear() = Unit

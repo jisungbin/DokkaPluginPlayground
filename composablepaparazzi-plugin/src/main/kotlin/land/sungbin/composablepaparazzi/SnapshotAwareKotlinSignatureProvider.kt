@@ -12,10 +12,9 @@ import org.jetbrains.dokka.base.signatures.SignatureProvider
 import org.jetbrains.dokka.links.DRI
 import org.jetbrains.dokka.model.DFunction
 import org.jetbrains.dokka.model.Documentable
-import org.jetbrains.dokka.model.doc.CustomDocTag
 import org.jetbrains.dokka.model.doc.CustomTagWrapper
 import org.jetbrains.dokka.model.doc.Text
-import org.jetbrains.dokka.model.firstChildOfTypeOrNull
+import org.jetbrains.dokka.model.firstMemberOfTypeOrNull
 import org.jetbrains.dokka.model.properties.PropertyContainer
 import org.jetbrains.dokka.model.toDisplaySourceSets
 import org.jetbrains.dokka.pages.ContentEmbeddedResource
@@ -23,7 +22,6 @@ import org.jetbrains.dokka.pages.ContentKind
 import org.jetbrains.dokka.pages.ContentNode
 import org.jetbrains.dokka.pages.DCI
 import org.jetbrains.dokka.plugability.DokkaContext
-import org.jetbrains.dokka.utilities.cast
 
 class SnapshotAwareKotlinSignatureProvider(context: DokkaContext) : SignatureProvider {
   private val delegator = KotlinSignatureProvider(context)
@@ -56,22 +54,14 @@ class SnapshotAwareKotlinSignatureProvider(context: DokkaContext) : SignaturePro
 
     documentable.documentation.values.flatMap { it.children }.forEach { tag ->
       if (tag is CustomTagWrapper) {
+        fun CustomTagWrapper.text(): String = firstMemberOfTypeOrNull<Text>()?.body?.trimIndent().orEmpty()
+
         when (tag.name) {
           SnapshotImageProvider.TAG_NAME_ANNOTATION -> {
-            tag.root.cast<CustomDocTag>()
-              .firstChildOfTypeOrNull<Text>()
-              ?.body
-              ?.split(' ')
-              ?.takeIf { it.isNotEmpty() }
-              ?.let { snapshotNames = it }
+            tag.text().split(' ').takeIf { it.isNotEmpty() }?.let { snapshotNames = it }
           }
           SnapshotImageProvider.TAG_SIZE_ANNOTATION -> {
-            tag.root.cast<CustomDocTag>()
-              .firstChildOfTypeOrNull<Text>()
-              ?.body
-              ?.split(',')
-              ?.takeIf { it.size == 2 }
-              ?.let { snapshotSize = it }
+            tag.text().split(',').takeIf { it.size == 2 }?.let { snapshotSize = it }
           }
         }
       }
@@ -115,6 +105,6 @@ class SnapshotAwareKotlinSignatureProvider(context: DokkaContext) : SignaturePro
     private val COMPOSABLE_ANNOTATION = DRI(packageName = "androidx.compose.runtime", classNames = "Composable")
 
     @Suppress("NOTHING_TO_INLINE")
-    inline fun dokkaSnapshotPathFor(path: Path): String = "snapshot/${path.name}"
+    inline fun dokkaSnapshotPathFor(path: Path): String = "snapshots/${path.name}"
   }
 }

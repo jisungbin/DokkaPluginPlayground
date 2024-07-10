@@ -19,8 +19,6 @@ import org.jetbrains.dokka.utilities.DokkaConsoleLogger
 import org.jetbrains.dokka.utilities.DokkaLogger
 import org.jetbrains.dokka.utilities.LoggingLevel
 
-// SignatureProvider.signature() calls are originally made twice for the same Documentable.
-// I don't know why, but I've seen it called twice in the test code in Kotlin/Dokka.
 abstract class AbstractComposePaparazziTest(
   logger: TestLogger = TestLogger(DokkaConsoleLogger(LoggingLevel.DEBUG)),
 ) : BaseAbstractTest(logger) {

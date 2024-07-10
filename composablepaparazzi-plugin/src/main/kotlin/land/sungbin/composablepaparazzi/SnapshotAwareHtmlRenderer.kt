@@ -5,6 +5,7 @@ import kotlinx.html.img
 import land.sungbin.composablepaparazzi.SnapshotAwareKotlinSignatureProvider.Companion.dokkaSnapshotPathFor
 import okio.FileSystem
 import okio.Path.Companion.toOkioPath
+import okio.Path.Companion.toPath
 import org.jetbrains.dokka.base.renderers.html.HtmlRenderer
 import org.jetbrains.dokka.base.renderers.isImage
 import org.jetbrains.dokka.pages.ContentEmbeddedResource
@@ -19,15 +20,15 @@ class SnapshotAwareHtmlRenderer(
   private val outputPath = context.configuration.outputDir.toOkioPath()
 
   override fun FlowContent.buildResource(node: ContentEmbeddedResource, pageContext: ContentPage) {
-    val overrideSize = node.extra.allOfType<SnapshotSizeExtra>().firstOrNull()
     val providedSnapshot = node.extra.allOfType<SnapshotPathExtra>().firstOrNull()
+
+    if (providedSnapshot != null) buildLineBreak()
 
     if (node.isImage()) {
       img(src = node.address, alt = node.altText) {
-        if (overrideSize != null) {
-          width = overrideSize.width
-          height = overrideSize.height
-        }
+        val (width, height) = node.extra.allOfType<SnapshotSizeExtra>().firstOrNull() ?: return@img
+        this.width = width
+        this.height = height
       }
     } else {
       logger.error("Unrecognized resource address: ${node.address}")
@@ -39,9 +40,9 @@ class SnapshotAwareHtmlRenderer(
           logger.error("Failed to resolve the location for the current node: ${node.dci}")
           return
         }
-        outputPath.resolve(current.substringBeforeLast('/')).resolve(dokkaSnapshotPathFor(providedSnapshot.path))
+        outputPath.resolve(current.toPath().parent!!).resolve(dokkaSnapshotPathFor(providedSnapshot.path))
       }
-      destination.parent?.let(fs::createDirectories)
+      fs.createDirectories(destination.parent!!)
       fs.copy(providedSnapshot.path, destination)
       logger.debug("Copied ${providedSnapshot.path} to $destination")
     }

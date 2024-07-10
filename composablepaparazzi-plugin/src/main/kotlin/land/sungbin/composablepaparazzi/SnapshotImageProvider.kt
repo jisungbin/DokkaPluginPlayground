@@ -37,7 +37,7 @@ class SnapshotImageProvider(
     /** @snapshotname a,b,c */
     const val TAG_NAME_ANNOTATION = "snapshotname"
 
-    /** @snapshotsize 100x100 */
+    /** @snapshotsize 100,100 */ // width,height
     const val TAG_SIZE_ANNOTATION = "snapshotsize"
 
     fun Path.dri(anchor: DRI) = DRI(
