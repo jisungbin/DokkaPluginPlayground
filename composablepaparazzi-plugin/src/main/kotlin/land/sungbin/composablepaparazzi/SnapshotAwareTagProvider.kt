@@ -21,12 +21,10 @@ object SnapshotAwareTagProvider : CustomTagContentProvider {
       val tagContent = customTag.firstMemberOfTypeOrNull<Text>()?.body?.trimIndent() ?: return
 
       breakLine()
-      group {
-        text("Snapshot names", sourceSets = setOf(sourceSet), styles = setOf(TextStyle.Bold))
-        unorderedList {
-          tagContent.split(',').forEach { name ->
-            item { text(name) }
-          }
+      text("Snapshot names", styles = setOf(TextStyle.Bold))
+      unorderedList {
+        tagContent.split(',').forEach { name ->
+          item { text(name) }
         }
       }
     }

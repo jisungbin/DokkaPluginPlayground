@@ -1,6 +1,7 @@
 package land.sungbin.composablepaparazzi
 
 import kotlinx.html.FlowContent
+import kotlinx.html.br
 import kotlinx.html.img
 import land.sungbin.composablepaparazzi.SnapshotAwareKotlinSignatureProvider.Companion.dokkaSnapshotPathFor
 import okio.FileSystem
@@ -22,8 +23,7 @@ class SnapshotAwareHtmlRenderer(
   override fun FlowContent.buildResource(node: ContentEmbeddedResource, pageContext: ContentPage) {
     val providedSnapshot = node.extra.allOfType<SnapshotPathExtra>().firstOrNull()
 
-    if (providedSnapshot != null) buildLineBreak()
-
+    if (providedSnapshot != null) br()
     if (node.isImage()) {
       img(src = node.address, alt = node.altText) {
         val (width, height) = node.extra.allOfType<SnapshotSizeExtra>().firstOrNull() ?: return@img

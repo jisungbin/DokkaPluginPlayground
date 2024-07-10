@@ -13,11 +13,13 @@ import org.jetbrains.dokka.PluginConfigurationImpl
 import org.jetbrains.dokka.base.testApi.testRunner.BaseAbstractTest
 import org.jetbrains.dokka.base.testApi.testRunner.BaseTestBuilder
 import org.jetbrains.dokka.pages.RootPageNode
+import org.jetbrains.dokka.plugability.DokkaContext
 import org.jetbrains.dokka.plugability.DokkaPlugin
 import org.jetbrains.dokka.testApi.logger.TestLogger
 import org.jetbrains.dokka.utilities.DokkaConsoleLogger
 import org.jetbrains.dokka.utilities.DokkaLogger
 import org.jetbrains.dokka.utilities.LoggingLevel
+import utils.TestOutputWriterPlugin
 
 abstract class AbstractComposePaparazziTest(
   logger: TestLogger = TestLogger(DokkaConsoleLogger(LoggingLevel.DEBUG)),
@@ -25,11 +27,14 @@ abstract class AbstractComposePaparazziTest(
   protected fun test(
     vararg pathAndContents: String,
     cleanupOutput: Boolean = true,
+    useTestWriter: Boolean = false,
     verifyOnPostStage: (Path) -> Unit = {},
+    verifyOnRenderingStage: (RootPageNode, DokkaContext) -> Unit = { _, _ -> },
     verifyOnPagesGenerationStage: (RootPageNode) -> Unit,
   ) {
     require(pathAndContents.size % 2 == 0) { "pathAndContents should have even number of elements" }
 
+    val testWriter by lazy { TestOutputWriterPlugin() }
     val configuration = dokkaConfiguration {
       sourceSets {
         sourceSet {
@@ -70,10 +75,13 @@ abstract class AbstractComposePaparazziTest(
       )
       runTests(
         configuration = newConfiguration,
-        pluginOverrides = listOf(ComposablePaparazziPlugin()),
+        pluginOverrides = listOf(ComposablePaparazziPlugin()).run {
+          if (useTestWriter) plus(testWriter) else this
+        },
         testLogger = logger,
       ) {
         pagesGenerationStage = verifyOnPagesGenerationStage
+        renderingStage = verifyOnRenderingStage
       }
       verifyOnPostStage(tempDir)
     }
