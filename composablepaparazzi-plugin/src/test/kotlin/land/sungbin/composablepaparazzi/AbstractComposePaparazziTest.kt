@@ -19,6 +19,9 @@ import org.jetbrains.dokka.testApi.logger.TestLogger
 import org.jetbrains.dokka.utilities.DokkaConsoleLogger
 import org.jetbrains.dokka.utilities.DokkaLogger
 import org.jetbrains.dokka.utilities.LoggingLevel
+import org.jsoup.Jsoup
+import org.jsoup.nodes.Element
+import utils.TestOutputWriter
 import utils.TestOutputWriterPlugin
 
 abstract class AbstractComposePaparazziTest(
@@ -29,7 +32,7 @@ abstract class AbstractComposePaparazziTest(
     cleanupOutput: Boolean = true,
     useTestWriter: Boolean = false,
     verifyOnPostStage: (Path) -> Unit = {},
-    verifyOnRenderingStage: (RootPageNode, DokkaContext) -> Unit = { _, _ -> },
+    verifyOnRenderingStage: (TestOutputWriter, RootPageNode, DokkaContext) -> Unit = { _, _, _ -> },
     verifyOnPagesGenerationStage: (RootPageNode) -> Unit,
   ) {
     require(pathAndContents.size % 2 == 0) { "pathAndContents should have even number of elements" }
@@ -81,11 +84,18 @@ abstract class AbstractComposePaparazziTest(
         testLogger = logger,
       ) {
         pagesGenerationStage = verifyOnPagesGenerationStage
-        renderingStage = verifyOnRenderingStage
+        renderingStage = { root, context ->
+          verifyOnRenderingStage(testWriter.writer, root, context)
+        }
       }
       verifyOnPostStage(tempDir)
     }
   }
+
+  protected fun TestOutputWriter.findContent(path: String): Element =
+    contents.entries.single { (key, _) -> key.endsWith(path, ignoreCase = true) }.value
+      .let(Jsoup::parse).select("#content")
+      .single()
 
   private inline fun runTests(
     configuration: DokkaConfiguration,

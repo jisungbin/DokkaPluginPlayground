@@ -12,19 +12,17 @@ import okio.Path.Companion.toPath
 import okio.fakefilesystem.FakeFileSystem
 
 class SnapshotImageProviderTest {
-  private var fs: FakeFileSystem? = null
+  private lateinit var fs: FakeFileSystem
 
   @BeforeTest fun prepare() {
     fs = FakeFileSystem()
   }
 
-  @AfterTest fun cleanup() {
-    fs?.checkNoOpenFiles()
-    fs = null
+  @AfterTest fun tearDown() {
+    fs.checkNoOpenFiles()
   }
 
   @Test fun snapshotPathShouldBeExist() {
-    val fs = fs!!
     val path = "snapshot".toPath()
 
     assertFailure { SnapshotImageProvider(path, fs) }
@@ -32,15 +30,13 @@ class SnapshotImageProviderTest {
   }
 
   @Test fun snapshotPathShouldBeDirectory() {
-    val fs = fs!!
     val path = "helloworld.txt".toPath().also { fs.write(it) {} }
 
     assertFailure { SnapshotImageProvider(path, fs) }
       .hasMessage("Snapshot directory '$path' is not a directory")
   }
 
-  @Test fun takingSnapshotOfComposableFromDeepPath() {
-    val fs = fs!!
+  @Test fun takingSingleNameSnapshot() {
     val path = "a/b/c/d/e/f/g/h".toPath().also {
       fs.createDirectories(it)
       fs.write(it.resolve("Hello.png")) {}
@@ -51,8 +47,18 @@ class SnapshotImageProviderTest {
     assertThat(result).isEqualTo(path.resolve("Hello.png"))
   }
 
+  @Test fun takingMultipleNamesSnapshot() {
+    val path = "a/b/c/d/e/f/g/h".toPath().also {
+      fs.createDirectories(it)
+      fs.write(it.resolve("HelloWorldByeWorld.png")) {}
+    }
+    val provider = SnapshotImageProvider(path, fs)
+    val result = provider.getPath(listOf("hello", "bye"))
+
+    assertThat(result).isEqualTo(path.resolve("HelloWorldByeWorld.png"))
+  }
+
   @Test fun returnsNullIfSnapshotDoesNotExist() {
-    val fs = fs!!
     val provider = SnapshotImageProvider("/".toPath(), fs)
     val result = provider.getPath(listOf("world"))
 

@@ -58,7 +58,7 @@ class SnapshotAwareKotlinSignatureProvider(context: DokkaContext) : SignaturePro
 
         when (tag.name) {
           SnapshotImageProvider.TAG_NAME_ANNOTATION -> {
-            tag.text().split(' ').takeIf { it.isNotEmpty() }?.let { snapshotNames = it }
+            tag.text().split(',').takeIf { it.isNotEmpty() }?.let { snapshotNames = it }
           }
           SnapshotImageProvider.TAG_SIZE_ANNOTATION -> {
             tag.text().split(',').takeIf { it.size == 2 }?.let { snapshotSize = it }

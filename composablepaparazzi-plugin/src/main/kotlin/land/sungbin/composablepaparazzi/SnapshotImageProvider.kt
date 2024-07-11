@@ -43,7 +43,7 @@ class SnapshotImageProvider(
     fun Path.dri(anchor: DRI) = DRI(
       packageName = anchor.packageName,
       classNames = anchor.classNames,
-      extra = "snapshot@${name}"
+      extra = "snapshot@${name}",
     )
   }
 }
