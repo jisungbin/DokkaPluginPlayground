@@ -1,6 +1,6 @@
 plugins {
   kotlin("jvm")
-  id("org.jetbrains.dokka") version "1.9.20"
+  id("org.jetbrains.dokka") version "2.2.0"
 }
 
 val removeOldOutputTask = tasks.create<Delete>("removeOldOutput") {
