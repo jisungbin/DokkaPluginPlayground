@@ -21,7 +21,7 @@ tasks.test {
 
 dependencies {
   // TODO https://github.com/Kotlin/dokka/issues/2812
-  val dokkaVersion = "1.9.20"
+  val dokkaVersion = "2.2.0"
 
   compileOnly("org.jetbrains.dokka:dokka-core:$dokkaVersion")
   implementation("org.jetbrains.dokka:dokka-base:$dokkaVersion")
